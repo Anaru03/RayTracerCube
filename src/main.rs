@@ -17,33 +17,53 @@ const HEIGHT: usize = 500;
 
 const ROTATION_SPEED: f32 = 0.05;
 
-fn render(framebuffer: &mut Framebuffer, cube: &Cube, camera: &Camera, light: &Light) {
-    framebuffer.clear(rgb(18, 20, 25));
+fn shade(ray: &ray::Ray, object: &Cube, t: f32, light: &Light, base_color: (f32, f32, f32)) -> u32 {
+    let hit_point = ray.at(t);
+    let normal = object.normal_at(hit_point);
+    let diffuse = light.illuminate(hit_point, normal);
+
+    let ambient = 0.20;
+    let brightness = (ambient + diffuse * 0.80).min(1.0);
+
+    rgb(
+        (base_color.0 * brightness) as u32,
+        (base_color.1 * brightness) as u32,
+        (base_color.2 * brightness) as u32,
+    )
+}
+
+fn render(
+    framebuffer: &mut Framebuffer,
+    cube: &Cube,
+    floor: &Cube,
+    camera: &Camera,
+    light: &Light,
+) {
+    let background = rgb(18, 20, 25);
+
+    framebuffer.clear(background);
 
     for y in 0..HEIGHT {
         for x in 0..WIDTH {
             let ray = camera.get_ray(x, y, WIDTH, HEIGHT);
 
-            let color = if let Some(t) = cube.intersect(&ray) {
-                let hit_point = ray.at(t);
-                let normal = cube.normal_at(hit_point);
+            let cube_hit = cube.intersect(&ray);
+            let floor_hit = floor.intersect(&ray);
 
-                let diffuse = light.illuminate(hit_point, normal);
+            let color = match (cube_hit, floor_hit) {
+                (Some(cube_t), Some(floor_t)) => {
+                    if cube_t < floor_t {
+                        shade(&ray, cube, cube_t, light, (220.0, 35.0, 35.0))
+                    } else {
+                        shade(&ray, floor, floor_t, light, (110.0, 115.0, 125.0))
+                    }
+                }
 
-                let ambient = 0.20;
-                let brightness = (ambient + diffuse * 0.80).min(1.0);
+                (Some(cube_t), None) => shade(&ray, cube, cube_t, light, (220.0, 35.0, 35.0)),
 
-                let base_r = 180.0;
-                let base_g = 185.0;
-                let base_b = 195.0;
+                (None, Some(floor_t)) => shade(&ray, floor, floor_t, light, (110.0, 115.0, 125.0)),
 
-                rgb(
-                    (base_r * brightness) as u32,
-                    (base_g * brightness) as u32,
-                    (base_b * brightness) as u32,
-                )
-            } else {
-                rgb(18, 20, 25)
+                (None, None) => background,
             };
 
             framebuffer.set_pixel(x, y, color);
@@ -54,13 +74,12 @@ fn render(framebuffer: &mut Framebuffer, cube: &Cube, camera: &Camera, light: &L
 fn main() {
     let mut framebuffer = Framebuffer::new(WIDTH, HEIGHT);
 
-    // Cubo fijo en el centro de la escena
     let cube = Cube::new(Vec3::new(-1.0, -1.0, -1.0), Vec3::new(1.0, 1.0, 1.0));
 
-    // Luz fija en el mundo
+    let floor = Cube::new(Vec3::new(-6.0, -1.25, -6.0), Vec3::new(6.0, -1.05, 6.0));
+
     let light = Light::new(Vec3::new(-3.0, 5.0, 4.0), 1.0);
 
-    // Camara orbital
     let mut camera = Camera::new(
         Vec3::new(4.0, 3.0, 5.0),
         Vec3::new(0.0, 0.0, 0.0),
@@ -90,7 +109,7 @@ fn main() {
             }
         }
 
-        render(&mut framebuffer, &cube, &camera, &light);
+        render(&mut framebuffer, &cube, &floor, &camera, &light);
 
         window
             .update_with_buffer(&framebuffer.buffer, WIDTH, HEIGHT)
