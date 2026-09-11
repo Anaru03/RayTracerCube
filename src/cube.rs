@@ -1,4 +1,5 @@
 use crate::ray::Ray;
+use crate::texture::CubeFace;
 use crate::vector::Vec3;
 
 #[derive(Clone, Copy, Debug)]
@@ -72,6 +73,46 @@ impl Cube {
             Vec3::new(0.0, 0.0, -1.0)
         } else {
             Vec3::new(0.0, 0.0, 1.0)
+        }
+    }
+
+    pub fn texture_coordinates(&self, point: Vec3) -> (CubeFace, f32, f32) {
+        let epsilon = 0.001;
+
+        let width = self.max.x - self.min.x;
+        let height = self.max.y - self.min.y;
+        let depth = self.max.z - self.min.z;
+
+        if (point.z - self.max.z).abs() < epsilon {
+            let u = (point.x - self.min.x) / width;
+            let v = 1.0 - (point.y - self.min.y) / height;
+
+            (CubeFace::Front, u, v)
+        } else if (point.z - self.min.z).abs() < epsilon {
+            let u = 1.0 - (point.x - self.min.x) / width;
+            let v = 1.0 - (point.y - self.min.y) / height;
+
+            (CubeFace::Back, u, v)
+        } else if (point.x - self.min.x).abs() < epsilon {
+            let u = 1.0 - (point.z - self.min.z) / depth;
+            let v = 1.0 - (point.y - self.min.y) / height;
+
+            (CubeFace::Left, u, v)
+        } else if (point.x - self.max.x).abs() < epsilon {
+            let u = (point.z - self.min.z) / depth;
+            let v = 1.0 - (point.y - self.min.y) / height;
+
+            (CubeFace::Right, u, v)
+        } else if (point.y - self.max.y).abs() < epsilon {
+            let u = (point.x - self.min.x) / width;
+            let v = (point.z - self.min.z) / depth;
+
+            (CubeFace::Top, u, v)
+        } else {
+            let u = (point.x - self.min.x) / width;
+            let v = 1.0 - (point.z - self.min.z) / depth;
+
+            (CubeFace::Bottom, u, v)
         }
     }
 }

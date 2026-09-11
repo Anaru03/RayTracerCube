@@ -23,7 +23,9 @@ impl Camera {
 
     pub fn basis_change(&self, vector: &Vec3) -> Vec3 {
         let forward = (self.center - self.eye).normalize();
+
         let right = forward.cross(&self.up).normalize();
+
         let up = right.cross(&forward).normalize();
 
         let rotated = right * vector.x + up * vector.y - forward * vector.z;
@@ -56,6 +58,7 @@ impl Camera {
 
     pub fn get_ray(&self, x: usize, y: usize, width: usize, height: usize) -> Ray {
         let aspect_ratio = width as f32 / height as f32;
+
         let fov_scale = (self.fov / 2.0).tan();
 
         let pixel_x = (2.0 * (x as f32 + 0.5) / width as f32 - 1.0) * aspect_ratio * fov_scale;
