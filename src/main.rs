@@ -1,4 +1,3 @@
-mod bmp;
 mod camera;
 mod cube;
 mod framebuffer;
@@ -6,29 +5,19 @@ mod light;
 mod ray;
 mod vector;
 
-use bmp::save_bmp;
 use camera::Camera;
 use cube::Cube;
 use framebuffer::{Framebuffer, rgb};
 use light::Light;
+use minifb::{Key, Window, WindowOptions};
 use vector::Vec3;
 
 const WIDTH: usize = 500;
 const HEIGHT: usize = 500;
 
-fn main() {
-    let mut framebuffer = Framebuffer::new(WIDTH, HEIGHT);
+const ROTATION_SPEED: f32 = 0.05;
 
-    let cube = Cube::new(Vec3::new(-1.0, -1.0, -1.0), Vec3::new(1.0, 1.0, 1.0));
-
-    let camera = Camera::new(
-        Vec3::new(4.0, 3.0, 5.0),
-        Vec3::new(0.0, 0.0, 0.0),
-        60.0_f32.to_radians(),
-    );
-
-    let light = Light::new(Vec3::new(-3.0, 5.0, 4.0), 1.0);
-
+fn render(framebuffer: &mut Framebuffer, cube: &Cube, camera: &Camera, light: &Light) {
     framebuffer.clear(rgb(18, 20, 25));
 
     for y in 0..HEIGHT {
@@ -41,8 +30,8 @@ fn main() {
 
                 let diffuse = light.illuminate(hit_point, normal);
 
-                let ambient = 0.15;
-                let brightness = (ambient + diffuse * 0.85).min(1.0);
+                let ambient = 0.20;
+                let brightness = (ambient + diffuse * 0.80).min(1.0);
 
                 let base_r = 180.0;
                 let base_g = 185.0;
@@ -60,10 +49,51 @@ fn main() {
             framebuffer.set_pixel(x, y, color);
         }
     }
+}
 
-    save_bmp(&framebuffer, "cube.bmp").expect("No se pudo guardar el render");
+fn main() {
+    let mut framebuffer = Framebuffer::new(WIDTH, HEIGHT);
 
-    println!("RayTracerCube");
-    println!("Render terminado");
-    println!("Imagen guardada en cube.bmp");
+    // Cubo fijo en el centro de la escena
+    let cube = Cube::new(Vec3::new(-1.0, -1.0, -1.0), Vec3::new(1.0, 1.0, 1.0));
+
+    // Luz fija en el mundo
+    let light = Light::new(Vec3::new(-3.0, 5.0, 4.0), 1.0);
+
+    // Camara orbital
+    let mut camera = Camera::new(
+        Vec3::new(4.0, 3.0, 5.0),
+        Vec3::new(0.0, 0.0, 0.0),
+        Vec3::new(0.0, 1.0, 0.0),
+        60.0_f32.to_radians(),
+    );
+
+    let mut window = Window::new(
+        "RayTracerCube | Flechas: camara orbital | ESC: salir",
+        WIDTH,
+        HEIGHT,
+        WindowOptions::default(),
+    )
+    .expect("No se pudo crear la ventana");
+
+    while window.is_open() && !window.is_key_down(Key::Escape) {
+        let orbit_controls = [
+            (Key::Left, ROTATION_SPEED, 0.0),
+            (Key::Right, -ROTATION_SPEED, 0.0),
+            (Key::Up, 0.0, -ROTATION_SPEED),
+            (Key::Down, 0.0, ROTATION_SPEED),
+        ];
+
+        for (key, delta_yaw, delta_pitch) in orbit_controls {
+            if window.is_key_down(key) {
+                camera.orbit(delta_yaw, delta_pitch);
+            }
+        }
+
+        render(&mut framebuffer, &cube, &camera, &light);
+
+        window
+            .update_with_buffer(&framebuffer.buffer, WIDTH, HEIGHT)
+            .expect("No se pudo actualizar la ventana");
+    }
 }
