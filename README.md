@@ -1,8 +1,10 @@
 # RayTracerCube
 
-Implementación de un cubo 3D utilizando Ray Tracing en Rust, con iluminación difusa y una cámara orbital interactiva.
+Implementación de un cubo 3D utilizando **Ray Tracing en Rust**, con iluminación difusa y una cámara orbital interactiva.
 
 Este ejercicio forma parte del curso de Gráficas por Computadora y tiene como objetivo aplicar los fundamentos de ray tracing para generar geometría tridimensional mediante rayos primarios, intersecciones, normales e iluminación.
+
+![Demo de RayTracerCube](./cubo.gif)
 
 ---
 
@@ -73,6 +75,21 @@ Todas las caras del cubo utilizan el mismo color base. Las diferencias de intens
 ## Ejecución
 
 Requiere Rust y Cargo.
+
+Clona el repositorio:
+
+```bash
+git clone https://github.com/Anaru03/RayTracerCube.git
+cd RayTracerCube
+```
+
+Cambia a la branch del ejercicio:
+
+```bash
+git switch ejercicio-cube
+```
+
+Ejecuta:
 
 ```bash
 cargo run
