@@ -1,32 +1,59 @@
-# RayTracerCube
+# RayTracerCube - Texturas
 
-Implementación de un cubo 3D utilizando Ray Tracing en Rust, con iluminación difusa y una cámara orbital interactiva.
+Implementación de mapeo de texturas sobre un cubo 3D utilizando **Ray Tracing en Rust**, iluminación difusa y una cámara orbital interactiva.
 
-Este ejercicio forma parte del curso de Gráficas por Computadora y tiene como objetivo aplicar los fundamentos de ray tracing para generar geometría tridimensional mediante rayos primarios, intersecciones, normales e iluminación.
+Este ejercicio extiende el raytracer del cubo para aplicar una textura inspirada en un **cubo Rubik 3x3** mediante coordenadas UV.
+
+![Demo de RayTracerCube con texturas](./textura.gif)
 
 ---
 
 ## Características
 
 - Ray tracing con un rayo primario por píxel
-- Intersección entre rayos y un cubo 3D
+- Intersección rayo-cubo
 - Cálculo del punto de impacto
-- Normales independientes para cada cara del cubo
+- Normales para las seis caras
+- Coordenadas UV
+- Mapeo de texturas
+- Patrón 3x3 inspirado en un cubo Rubik
+- Diferentes colores según la cara
 - Iluminación difusa
-- Fuente de luz fija en el mundo
+- Fuente de luz fija
 - Cámara orbital interactiva
-- Rotación horizontal y vertical
-- Framebuffer propio
-- Cubo con color base rojo
 - Base para el escenario
+
+---
+
+## Mapeo de texturas
+
+Cuando un rayo intersecta el cubo, el punto de impacto se utiliza para determinar qué cara fue alcanzada y calcular sus coordenadas **UV**.
+
+```text
+Rayo primario
+  ↓
+Intersección con el cubo
+  ↓
+Punto de impacto
+  ↓
+Identificación de la cara
+  ↓
+Coordenadas UV
+  ↓
+Textura del Rubik
+  ↓
+Iluminación difusa
+  ↓
+Color final
+```
+
+Las coordenadas UV permiten transformar una posición sobre la superficie 3D del cubo en una posición 2D utilizada para determinar el color de la textura.
 
 ---
 
 ## Cámara orbital
 
-La cámara permanece apuntando hacia el centro de la escena mientras se desplaza alrededor del cubo.
-
-Los movimientos horizontales corresponden al **yaw** y los movimientos verticales al **pitch**.
+La cámara permanece apuntando hacia el centro de la escena mientras orbita alrededor del cubo.
 
 | Tecla | Acción |
 |:---:|---|
@@ -40,41 +67,21 @@ El cubo y la fuente de luz permanecen fijos. Únicamente cambia la posición de 
 
 ---
 
-## Iluminación difusa
-
-La escena utiliza únicamente iluminación difusa.
-
-Para cada punto de impacto se calcula la dirección hacia la fuente de luz y se compara con la normal de la superficie mediante el producto punto.
-
-```text
-Píxel
-  ↓
-Rayo primario
-  ↓
-Intersección con el cubo
-  ↓
-Punto de impacto
-  ↓
-Normal de la cara
-  ↓
-Dirección hacia la luz
-  ↓
-Producto punto
-  ↓
-Intensidad difusa
-  ↓
-Color del píxel
-```
-
-Todas las caras del cubo utilizan el mismo color base. Las diferencias de intensidad visibles entre ellas son resultado de su orientación respecto a la fuente de luz.
-
----
-
 ## Ejecución
 
 Requiere Rust y Cargo.
 
+Si ya tienes el repositorio:
+
 ```bash
+git switch ejercicio-texturas
+cargo run
+```
+
+Para regresar al ejercicio sin texturas:
+
+```bash
+git switch ejercicio-cube
 cargo run
 ```
 
@@ -85,6 +92,7 @@ cargo run
 - Rust
 - Ray Tracing
 - minifb
+- Mapeo UV
 
 ---
 
@@ -93,5 +101,5 @@ cargo run
 El código correspondiente a este ejercicio se encuentra en:
 
 ```text
-ejercicio-cube
+ejercicio-texturas
 ```
